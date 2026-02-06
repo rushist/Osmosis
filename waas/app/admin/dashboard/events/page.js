@@ -1,0 +1,118 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+
+export default function EventsPage() {
+    const [events, setEvents] = useState([]);
+
+    useEffect(() => {
+        const savedEvents = localStorage.getItem("waas_events");
+        if (savedEvents) {
+            setEvents(JSON.parse(savedEvents));
+        }
+    }, []);
+
+    const deleteEvent = (id) => {
+        const updatedEvents = events.filter((e) => e.id !== id);
+        setEvents(updatedEvents);
+        localStorage.setItem("waas_events", JSON.stringify(updatedEvents));
+    };
+
+    return (
+        <div className="p-8">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-white mb-2">Events</h1>
+                    <p className="text-zinc-400">Manage your whitelist events</p>
+                </div>
+                <Link
+                    href="/admin/dashboard/events/new"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-orange-500/25"
+                >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Event
+                </Link>
+            </div>
+
+            {/* Events Grid */}
+            {events.length === 0 ? (
+                <div className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800 p-12 text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-zinc-800 flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-10 h-10 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">No Events Yet</h3>
+                    <p className="text-zinc-400 mb-6">Create your first whitelist event to get started</p>
+                    <Link
+                        href="/admin/dashboard/events/new"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold transition-all duration-300 hover:from-orange-400 hover:to-amber-400"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Your First Event
+                    </Link>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {events.map((event) => (
+                        <div
+                            key={event.id}
+                            className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all duration-300 group"
+                        >
+                            {/* Approval Type Badge */}
+                            <div className="flex items-center justify-between mb-4">
+                                <span
+                                    className={`px-3 py-1 rounded-lg text-xs font-semibold ${event.approvalType === "qr"
+                                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                                            : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                        }`}
+                                >
+                                    {event.approvalType === "qr" ? "QR Code" : "Wallet Whitelist"}
+                                </span>
+                                <button
+                                    onClick={() => deleteEvent(event.id)}
+                                    className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            {/* Event Info */}
+                            <h3 className="text-xl font-semibold text-white mb-2">{event.name}</h3>
+                            <p className="text-zinc-400 text-sm mb-4 line-clamp-2">{event.description || "No description"}</p>
+
+                            {/* Meta Info */}
+                            <div className="flex items-center gap-4 text-xs text-zinc-500">
+                                <span className="flex items-center gap-1">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {new Date(event.createdAt).toLocaleDateString()}
+                                </span>
+                            </div>
+
+                            {/* View Event Link */}
+                            <Link
+                                href={`/admin/dashboard/events/${event.id}`}
+                                className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all duration-300 font-medium"
+                            >
+                                View Event
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
