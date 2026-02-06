@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/providers";
 
@@ -9,15 +9,68 @@ const API_URL = "http://localhost:5000";
 export default function CreateEventPage() {
     const router = useRouter();
     const { account } = useWeb3();
+    const fileInputRef = useRef(null);
+
     const [formData, setFormData] = useState({
         title: "",
         place: "",
         date: "",
+        time: "",
         fee: "",
-        approvalType: "wallet", // 'qr' or 'wallet'
+        image: "",
+        approvalType: "wallet",
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState("");
+    const [imagePreview, setImagePreview] = useState("");
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Upload to Cloudinary
+        setIsUploading(true);
+        setError("");
+
+        try {
+            const formDataUpload = new FormData();
+            formDataUpload.append("image", file);
+
+            const res = await fetch(`${API_URL}/upload`, {
+                method: "POST",
+                body: formDataUpload,
+            });
+
+            if (!res.ok) {
+                throw new Error("Upload failed");
+            }
+
+            const data = await res.json();
+            setFormData((prev) => ({ ...prev, image: data.url }));
+            console.log("Image uploaded:", data.url);
+        } catch (err) {
+            console.error("Upload error:", err);
+            setError("Failed to upload image. Please try again.");
+            setImagePreview("");
+        }
+        setIsUploading(false);
+    };
+
+    const removeImage = () => {
+        setFormData((prev) => ({ ...prev, image: "" }));
+        setImagePreview("");
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -106,18 +159,35 @@ export default function CreateEventPage() {
                         />
                     </div>
 
-                    {/* Date */}
-                    <div>
-                        <label className="block text-sm font-medium text-zinc-300 mb-2">
-                            Date *
-                        </label>
-                        <input
-                            type="date"
-                            required
-                            value={formData.date}
-                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
-                        />
+                    {/* Date and Time Row */}
+                    <div className="grid grid-cols-2 gap-4">
+                        {/* Date */}
+                        <div>
+                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                Date *
+                            </label>
+                            <input
+                                type="date"
+                                required
+                                value={formData.date}
+                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
+                            />
+                        </div>
+
+                        {/* Time */}
+                        <div>
+                            <label className="block text-sm font-medium text-zinc-300 mb-2">
+                                Time *
+                            </label>
+                            <input
+                                type="time"
+                                required
+                                value={formData.time}
+                                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
+                            />
+                        </div>
                     </div>
 
                     {/* Fee */}
@@ -132,6 +202,69 @@ export default function CreateEventPage() {
                             placeholder="e.g., Free, $10, 0.01 ETH"
                             className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
                         />
+                    </div>
+
+                    {/* Image Upload */}
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            Event Image
+                        </label>
+
+                        {!imagePreview ? (
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="border-2 border-dashed border-zinc-700 rounded-xl p-8 text-center cursor-pointer hover:border-orange-500/50 transition-all duration-300"
+                            >
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                />
+                                <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+                                    <svg className="w-6 h-6 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <p className="text-zinc-400 text-sm">
+                                    Click to upload event image
+                                </p>
+                                <p className="text-zinc-600 text-xs mt-1">
+                                    JPG, PNG, GIF or WebP (max 5MB)
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="relative rounded-xl overflow-hidden border border-zinc-700">
+                                {isUploading && (
+                                    <div className="absolute inset-0 bg-zinc-900/80 flex items-center justify-center z-10">
+                                        <div className="flex items-center gap-3">
+                                            <div className="animate-spin w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full"></div>
+                                            <span className="text-white">Uploading...</span>
+                                        </div>
+                                    </div>
+                                )}
+                                <img
+                                    src={imagePreview}
+                                    alt="Event preview"
+                                    className="w-full h-48 object-cover"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={removeImage}
+                                    className="absolute top-2 right-2 p-2 bg-zinc-900/80 rounded-lg text-zinc-400 hover:text-red-400 transition-colors"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                                {formData.image && (
+                                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-emerald-500/20 border border-emerald-500/30 rounded-lg">
+                                        <span className="text-emerald-400 text-xs font-medium">✓ Uploaded</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Approval Type */}
@@ -162,7 +295,7 @@ export default function CreateEventPage() {
                                     QR Code
                                 </h4>
                                 <p className="text-sm text-zinc-400">
-                                    Admin sends QR via email for verification
+                                    Send QR via email
                                 </p>
                             </button>
 
@@ -188,7 +321,7 @@ export default function CreateEventPage() {
                                     Wallet Whitelist
                                 </h4>
                                 <p className="text-sm text-zinc-400">
-                                    Shows &quot;You are approved&quot; on approval
+                                    Approve wallets
                                 </p>
                             </button>
                         </div>
@@ -198,7 +331,7 @@ export default function CreateEventPage() {
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    disabled={isSubmitting || !formData.title || !formData.place || !formData.date}
+                    disabled={isSubmitting || isUploading || !formData.title || !formData.place || !formData.date || !formData.time}
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transform hover:scale-[1.02] shadow-lg shadow-orange-500/25"
                 >
                     {isSubmitting ? (

@@ -8,22 +8,46 @@ const events = [
     title: "Beach Cleanup Drive",
     place: "Juhu Beach",
     date: "12 Feb 2026",
+    time: "09:00 AM",
     fee: "0.01 ETH",
-    image: "https://images.unsplash.com/photo-1585951149385-27a059e04594?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    approvalType: "qr",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop"
   },
   {
     title: "Plastic Awareness Workshop",
     place: "Bandra Community Hall",
     date: "18 Feb 2026",
+    time: "02:00 PM",
     fee: "Free",
-    image: "https://images.unsplash.com/photo-1585951149385-27a059e04594?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    approvalType: "wallet",
+    image: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&auto=format&fit=crop"
   },
   {
     title: "Recycling Hackathon",
     place: "VESIT Auditorium",
     date: "25 Feb 2026",
+    time: "10:00 AM",
     fee: "0.02 ETH",
-    image: "https://images.unsplash.com/photo-1585951149385-27a059e04594?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    approvalType: "qr",
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop"
+  },
+  {
+    title: "Tree Plantation Drive",
+    place: "Sanjay Gandhi National Park",
+    date: "05 Mar 2026",
+    time: "07:00 AM",
+    fee: "Free",
+    approvalType: "wallet",
+    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop"
+  },
+  {
+    title: "Green Tech Summit",
+    place: "IIT Bombay Convention Center",
+    date: "15 Mar 2026",
+    time: "11:00 AM",
+    fee: "0.05 ETH",
+    approvalType: "qr",
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop"
   },
 ];
 
@@ -36,7 +60,7 @@ async function seed() {
     await Event.deleteMany();
     await Event.insertMany(events);
 
-    console.log("Events inserted successfully");
+    console.log("Events inserted successfully:", events.length, "events");
 
     process.exit();
   } catch (err) {

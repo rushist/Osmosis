@@ -4,7 +4,9 @@ const eventSchema = new mongoose.Schema({
   title: String,
   place: String,
   date: String,
+  time: String,
   fee: String,
+  image: String,
   approvalType: {
     type: String,
     enum: ["qr", "wallet"],
@@ -14,4 +16,5 @@ const eventSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model("Event", eventSchema);
+
 
