@@ -2,38 +2,51 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useWeb3 } from "@/app/providers";
+
+const API_URL = "http://localhost:5000";
 
 export default function CreateEventPage() {
     const router = useRouter();
+    const { account } = useWeb3();
     const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        approvalType: "qr", // 'qr' or 'wallet'
+        title: "",
+        place: "",
+        date: "",
+        fee: "",
+        approvalType: "wallet", // 'qr' or 'wallet'
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setError("");
 
-        // Create event object
-        const newEvent = {
-            id: Date.now().toString(),
-            ...formData,
-            createdAt: new Date().toISOString(),
-            attendees: [],
-            whitelistedWallets: [],
-        };
+        try {
+            const response = await fetch(`${API_URL}/events`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    ...formData,
+                    createdBy: account,
+                }),
+            });
 
-        // Save to localStorage
-        const existingEvents = JSON.parse(localStorage.getItem("waas_events") || "[]");
-        existingEvents.push(newEvent);
-        localStorage.setItem("waas_events", JSON.stringify(existingEvents));
+            if (!response.ok) {
+                throw new Error("Failed to create event");
+            }
 
-        // Redirect to events page
-        setTimeout(() => {
+            await response.json();
             router.push("/admin/dashboard/events");
-        }, 500);
+        } catch (err) {
+            console.error(err);
+            setError("Failed to create event. Please try again.");
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -53,35 +66,71 @@ export default function CreateEventPage() {
                 <p className="text-zinc-400">Set up a new whitelist event</p>
             </div>
 
+            {/* Error Message */}
+            {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400">
+                    {error}
+                </div>
+            )}
+
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800 p-6 space-y-6">
-                    {/* Event Name */}
+                    {/* Event Title */}
                     <div>
                         <label className="block text-sm font-medium text-zinc-300 mb-2">
-                            Event Name *
+                            Event Title *
                         </label>
                         <input
                             type="text"
                             required
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="Enter event name"
+                            value={formData.title}
+                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                            placeholder="Enter event title"
                             className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
                         />
                     </div>
 
-                    {/* Description */}
+                    {/* Place */}
                     <div>
                         <label className="block text-sm font-medium text-zinc-300 mb-2">
-                            Description
+                            Place *
                         </label>
-                        <textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            placeholder="Enter event description"
-                            rows={3}
-                            className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300 resize-none"
+                        <input
+                            type="text"
+                            required
+                            value={formData.place}
+                            onChange={(e) => setFormData({ ...formData, place: e.target.value })}
+                            placeholder="Enter event location"
+                            className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
+                        />
+                    </div>
+
+                    {/* Date */}
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            Date *
+                        </label>
+                        <input
+                            type="date"
+                            required
+                            value={formData.date}
+                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
+                        />
+                    </div>
+
+                    {/* Fee */}
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-300 mb-2">
+                            Fee
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.fee}
+                            onChange={(e) => setFormData({ ...formData, fee: e.target.value })}
+                            placeholder="e.g., Free, $10, 0.01 ETH"
+                            className="w-full px-4 py-3 rounded-xl bg-zinc-800 border border-zinc-700 text-white placeholder-zinc-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all duration-300"
                         />
                     </div>
 
@@ -113,7 +162,7 @@ export default function CreateEventPage() {
                                     QR Code
                                 </h4>
                                 <p className="text-sm text-zinc-400">
-                                    Each attendee gets a unique QR code for verification
+                                    Admin sends QR via email for verification
                                 </p>
                             </button>
 
@@ -139,7 +188,7 @@ export default function CreateEventPage() {
                                     Wallet Whitelist
                                 </h4>
                                 <p className="text-sm text-zinc-400">
-                                    Approve attendees by their wallet addresses
+                                    Shows &quot;You are approved&quot; on approval
                                 </p>
                             </button>
                         </div>
@@ -149,7 +198,7 @@ export default function CreateEventPage() {
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    disabled={isSubmitting || !formData.name}
+                    disabled={isSubmitting || !formData.title || !formData.place || !formData.date}
                     className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transform hover:scale-[1.02] shadow-lg shadow-orange-500/25"
                 >
                     {isSubmitting ? (

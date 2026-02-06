@@ -1,8 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useWeb3 } from "./providers";
 
 export default function Home() {
+  const router = useRouter();
+  const { connectWallet, isConnected, isConnecting } = useWeb3();
+
+  const handleViewEvents = async () => {
+    if (isConnected) {
+      router.push("/events");
+    } else {
+      const connected = await connectWallet();
+      if (connected) {
+        router.push("/events");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 relative overflow-hidden">
       {/* Background Effects */}
@@ -25,12 +41,21 @@ export default function Home() {
           </div>
           <span className="text-xl font-bold text-white">WaaS</span>
         </div>
-        <Link
-          href="/admin/login"
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-orange-500/25"
-        >
-          Admin Login
-        </Link>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleViewEvents}
+            disabled={isConnecting}
+            className="px-6 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all duration-300 border border-zinc-700 hover:border-zinc-600 disabled:opacity-50"
+          >
+            {isConnecting ? "Connecting..." : "View Events"}
+          </button>
+          <Link
+            href="/admin/login"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg shadow-orange-500/25"
+          >
+            Admin Login
+          </Link>
+        </div>
       </nav>
 
       {/* Hero Section */}
@@ -48,13 +73,20 @@ export default function Home() {
             Anonymous event whitelisting with ZK-powered verification.
             No on-chain registration. Complete privacy preservation.
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex items-center justify-center gap-4 flex-wrap">
             <Link
               href="/admin/login"
               className="px-8 py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-xl shadow-orange-500/25"
             >
               Create Event →
             </Link>
+            <button
+              onClick={handleViewEvents}
+              disabled={isConnecting}
+              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-xl shadow-purple-500/25 disabled:opacity-50"
+            >
+              {isConnecting ? "Connecting Wallet..." : "View Events"}
+            </button>
             <Link
               href="/verify"
               className="px-8 py-4 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-lg transition-all duration-300 border border-zinc-700 hover:border-zinc-600"

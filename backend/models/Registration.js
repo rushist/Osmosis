@@ -7,8 +7,16 @@ const registrationSchema = new mongoose.Schema(
       ref: "Event",
     },
     walletAddress: String,
+    email: String,
+    qrToken: String, // Unique token for QR code
+    qrCode: String, // Base64 QR code image
+    emailSent: {
+      type: Boolean,
+      default: false,
+    },
     status: {
       type: String,
+      enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
     adminMessage: {
@@ -20,3 +28,4 @@ const registrationSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Registration", registrationSchema);
+

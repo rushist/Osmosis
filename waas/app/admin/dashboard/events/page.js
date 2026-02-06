@@ -3,21 +3,48 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+const API_URL = "http://localhost:5000";
+
 export default function EventsPage() {
     const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const savedEvents = localStorage.getItem("waas_events");
-        if (savedEvents) {
-            setEvents(JSON.parse(savedEvents));
-        }
+        fetchEvents();
     }, []);
 
-    const deleteEvent = (id) => {
-        const updatedEvents = events.filter((e) => e.id !== id);
-        setEvents(updatedEvents);
-        localStorage.setItem("waas_events", JSON.stringify(updatedEvents));
+    const fetchEvents = async () => {
+        try {
+            const res = await fetch(`${API_URL}/events`);
+            const data = await res.json();
+            setEvents(data);
+        } catch (err) {
+            console.error("Error fetching events:", err);
+            // Fallback to localStorage
+            const savedEvents = localStorage.getItem("waas_events");
+            if (savedEvents) {
+                setEvents(JSON.parse(savedEvents));
+            }
+        }
+        setLoading(false);
     };
+
+    const deleteEvent = async (id) => {
+        try {
+            await fetch(`${API_URL}/events/${id}`, { method: "DELETE" });
+            setEvents(events.filter((e) => (e._id || e.id) !== id));
+        } catch (err) {
+            console.error("Error deleting event:", err);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="p-8 flex items-center justify-center min-h-[50vh]">
+                <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-8">
@@ -60,57 +87,71 @@ export default function EventsPage() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {events.map((event) => (
-                        <div
-                            key={event.id}
-                            className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all duration-300 group"
-                        >
-                            {/* Approval Type Badge */}
-                            <div className="flex items-center justify-between mb-4">
-                                <span
-                                    className={`px-3 py-1 rounded-lg text-xs font-semibold ${event.approvalType === "qr"
-                                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                                            : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                        }`}
-                                >
-                                    {event.approvalType === "qr" ? "QR Code" : "Wallet Whitelist"}
-                                </span>
-                                <button
-                                    onClick={() => deleteEvent(event.id)}
-                                    className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
-                                >
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            {/* Event Info */}
-                            <h3 className="text-xl font-semibold text-white mb-2">{event.name}</h3>
-                            <p className="text-zinc-400 text-sm mb-4 line-clamp-2">{event.description || "No description"}</p>
-
-                            {/* Meta Info */}
-                            <div className="flex items-center gap-4 text-xs text-zinc-500">
-                                <span className="flex items-center gap-1">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    {new Date(event.createdAt).toLocaleDateString()}
-                                </span>
-                            </div>
-
-                            {/* View Event Link */}
-                            <Link
-                                href={`/admin/dashboard/events/${event.id}`}
-                                className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all duration-300 font-medium"
+                    {events.map((event) => {
+                        const eventId = event._id || event.id;
+                        return (
+                            <div
+                                key={eventId}
+                                className="bg-zinc-900/80 backdrop-blur-xl rounded-2xl border border-zinc-800 p-6 hover:border-zinc-700 transition-all duration-300 group"
                             >
-                                View Event
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
-                            </Link>
-                        </div>
-                    ))}
+                                {/* Approval Type Badge */}
+                                <div className="flex items-center justify-between mb-4">
+                                    <span
+                                        className={`px-3 py-1 rounded-lg text-xs font-semibold ${event.approvalType === "qr"
+                                                ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                                                : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                            }`}
+                                    >
+                                        {event.approvalType === "qr" ? "QR Code" : "Wallet Whitelist"}
+                                    </span>
+                                    <button
+                                        onClick={() => deleteEvent(eventId)}
+                                        className="p-2 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 opacity-0 group-hover:opacity-100"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                {/* Event Info */}
+                                <h3 className="text-xl font-semibold text-white mb-2">{event.title}</h3>
+                                <p className="text-zinc-400 text-sm mb-2">{event.description || "No description"}</p>
+
+                                {/* Event Details */}
+                                {event.place && (
+                                    <p className="text-zinc-500 text-sm mb-1">📍 {event.place}</p>
+                                )}
+                                {event.date && (
+                                    <p className="text-zinc-500 text-sm mb-1">📅 {event.date}</p>
+                                )}
+                                {event.fee && (
+                                    <p className="text-zinc-500 text-sm mb-4">💰 {event.fee}</p>
+                                )}
+
+                                {/* Meta Info */}
+                                <div className="flex items-center gap-4 text-xs text-zinc-500 mb-4">
+                                    <span className="flex items-center gap-1">
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        {new Date(event.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+
+                                {/* View Event Link */}
+                                <Link
+                                    href={`/admin/dashboard/events/${eventId}`}
+                                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all duration-300 font-medium"
+                                >
+                                    Manage Event
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </Link>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
