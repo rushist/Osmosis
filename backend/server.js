@@ -21,8 +21,10 @@ mongoose
 
 app.use("/events", require("./routes/eventRoutes"));
 app.use("/register", require("./routes/registrationRoutes"));
+app.use("/upload", require("./routes/uploadRoutes"));
 
 app.listen(process.env.PORT, () =>
   console.log("Server is running on port 5000"),
 );
+
 
