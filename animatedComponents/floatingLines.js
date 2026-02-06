@@ -477,7 +477,7 @@ export default function FloatingLines({
     />
   );
 }
-import FloatingLines from './FloatingLines';
+//import FloatingLines from './FloatingLines';//
 
 {/* <div style={{ width: '100%', height: '600px', position: 'relative' }}>
   <FloatingLines 
