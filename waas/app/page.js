@@ -4,6 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWeb3 } from "./providers";
 import { useEffect, useState, useRef } from "react";
+import dynamic from "next/dynamic";
+
+// Dynamically import FloatingLines to avoid SSR issues with Three.js
+const FloatingLines = dynamic(() => import("./components/FloatingLines"), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Animated gradient text component
 function GradientText({ children, className = "" }) {
@@ -126,6 +133,23 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-950 relative overflow-hidden">
+      {/* FloatingLines WebGL Animation Background */}
+      <div className="fixed inset-0 z-0 opacity-60">
+        <FloatingLines
+          linesGradient={["#f97316", "#ec4899", "#a855f7", "#6366f1"]}
+          enabledWaves={["top", "middle", "bottom"]}
+          lineCount={[4, 5, 3]}
+          lineDistance={[6, 5, 4]}
+          animationSpeed={0.8}
+          interactive={true}
+          bendRadius={4.0}
+          bendStrength={-0.4}
+          parallax={true}
+          parallaxStrength={0.15}
+          mixBlendMode="screen"
+        />
+      </div>
+
       {/* Animated background gradient following mouse */}
       <div
         className="pointer-events-none fixed inset-0 z-0 transition-opacity duration-300"
@@ -134,14 +158,11 @@ export default function Home() {
         }}
       />
 
-      {/* Floating particles */}
-      <ParticlesBackground />
-
       {/* Mesh gradient blobs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-gradient-to-br from-orange-500/20 via-pink-500/10 to-transparent rounded-full blur-3xl animate-blob" />
-        <div className="absolute top-1/2 -left-40 w-[400px] h-[400px] bg-gradient-to-br from-purple-500/20 via-blue-500/10 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000" />
-        <div className="absolute -bottom-40 right-1/3 w-[450px] h-[450px] bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-transparent rounded-full blur-3xl animate-blob animation-delay-4000" />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-gradient-to-br from-orange-500/10 via-pink-500/5 to-transparent rounded-full blur-3xl animate-blob" />
+        <div className="absolute top-1/2 -left-40 w-[400px] h-[400px] bg-gradient-to-br from-purple-500/10 via-blue-500/5 to-transparent rounded-full blur-3xl animate-blob animation-delay-2000" />
+        <div className="absolute -bottom-40 right-1/3 w-[450px] h-[450px] bg-gradient-to-br from-emerald-500/8 via-teal-500/5 to-transparent rounded-full blur-3xl animate-blob animation-delay-4000" />
       </div>
 
       {/* Grid pattern with fade */}
@@ -189,7 +210,7 @@ export default function Home() {
           </div>
 
           {/* Main heading with gradient animation */}
-          <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 leading-tight animate-fade-in-up animation-delay-200">
+          <h1 className="text-6xl md:text-8xl font-bold text-white mb-6 leading-tight animate-fade-in-up animation-delay-200" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.05em" }}>
             Whitelist as a
             <br />
             <GradientText className="inline-block">Service</GradientText>
@@ -235,16 +256,6 @@ export default function Home() {
                 "Browse Events"
               )}
             </MagneticButton>
-
-            <Link
-              href="/verify"
-              className="px-8 py-4 rounded-2xl text-zinc-400 hover:text-white font-semibold text-lg transition-colors duration-300 flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Verify Attendance
-            </Link>
           </div>
         </div>
 
