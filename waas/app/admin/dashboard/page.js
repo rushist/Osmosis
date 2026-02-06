@@ -5,14 +5,27 @@ import Link from "next/link";
 
 export default function Dashboard() {
     const [events, setEvents] = useState([]);
+    const API_URL = "http://localhost:5000";
 
     useEffect(() => {
-        // Load events from localStorage
-        const savedEvents = localStorage.getItem("waas_events");
-        if (savedEvents) {
-            setEvents(JSON.parse(savedEvents));
+      const fetchEvents = async () => {
+        try {
+          const res = await fetch(`${API_URL}/events`);
+
+          if (!res.ok) {
+            throw new Error("Failed to fetch events");
+          }
+
+          const data = await res.json();
+          setEvents(data);
+        } catch (err) {
+          console.error("Error fetching events:", err);
         }
+      };
+
+      fetchEvents();
     }, []);
+
 
     const stats = [
         {
