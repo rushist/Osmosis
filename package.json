@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "concurrently \"npm run start --prefix backend\" \"npm run start --prefix waas\"",
-    "build": "npm install --prefix backend && npm install --prefix waas && npm run build --prefix waas"
+    "build": "npm install --prefix backend && npm install --prefix waas && npm install --prefix BC && npm run build --prefix waas"
   },
   "repository": {
     "type": "git",
