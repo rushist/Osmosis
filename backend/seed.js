@@ -1,7 +1,8 @@
-const mongoose = require("mongoose");
-require("dotenv").config();
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import Event from "./models/Event.js";
 
-const Event = require("./models/Event");
+dotenv.config();
 
 const events = [
   {

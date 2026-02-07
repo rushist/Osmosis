@@ -1,5 +1,7 @@
-const router = require("express").Router();
-const { upload, cloudinary } = require("../config/cloudinary");
+import express from "express";
+import { upload, cloudinary } from "../config/cloudinary.js";
+
+const router = express.Router();
 
 // Upload single image
 router.post("/", upload.single("image"), async (req, res) => {
@@ -33,4 +35,4 @@ router.delete("/:publicId", async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

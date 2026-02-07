@@ -1,7 +1,7 @@
-const cron = require("node-cron");
-const Registration = require("../models/Registration");
-const Event = require("../models/Event");
-const { sendQREmail } = require("../services/emailService");
+import cron from "node-cron";
+import Registration from "../models/Registration.js";
+import Event from "../models/Event.js";
+import { sendQREmail } from "../services/emailService.js";
 
 // Retry sending emails for approved QR registrations that haven't been sent
 const sendPendingEmails = async () => {
@@ -43,4 +43,4 @@ const initEmailCron = () => {
     sendPendingEmails();
 };
 
-module.exports = { initEmailCron, sendPendingEmails };
+export { initEmailCron, sendPendingEmails };

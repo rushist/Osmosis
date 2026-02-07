@@ -1,8 +1,10 @@
-const router = require("express").Router();
-const Registration = require("../models/Registration");
-const Event = require("../models/Event");
-const { generateQRToken, generateQRCode, sendQREmail } = require("../services/emailService");
-const { generateApprovalProof } = require("../services/zkProofService");
+import express from "express";
+import Registration from "../models/Registration.js";
+import Event from "../models/Event.js";
+import { generateQRToken, generateQRCode, sendQREmail } from "../services/emailService.js";
+import { generateApprovalProof } from "../services/zkProofService.js";
+
+const router = express.Router();
 
 // Create registration
 router.post("/", async (req, res) => {
@@ -359,5 +361,4 @@ router.put("/verify-onchain/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
-
+export default router;

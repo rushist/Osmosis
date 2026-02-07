@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const eventSchema = new mongoose.Schema({
   title: String,
@@ -15,6 +15,4 @@ const eventSchema = new mongoose.Schema({
   createdBy: String, // admin wallet address
 }, { timestamps: true });
 
-module.exports = mongoose.model("Event", eventSchema);
-
-
+export default mongoose.model("Event", eventSchema);

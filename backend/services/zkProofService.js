@@ -1,7 +1,11 @@
-const snarkjs = require("snarkjs");
-const path = require("path");
-const fs = require("fs");
-const crypto = require("crypto");
+import * as snarkjs from "snarkjs";
+import path from "path";
+import fs from "fs";
+import crypto from "crypto";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Paths to circuit build files (adjust based on your setup)
 const BC_BUILD_DIR = path.join(__dirname, "..", "..", "BC", "build");
@@ -211,7 +215,7 @@ async function verifyProofLocally(proof, publicSignals) {
   }
 }
 
-module.exports = {
+export {
   generateApprovalProof,
   verifyProofLocally,
   isCircuitReady,
