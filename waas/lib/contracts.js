@@ -42,7 +42,7 @@ export function getContractAddresses(chainId) {
 export async function getWhitelistRegistry(signer) {
   const network = await signer.provider.getNetwork();
   const addresses = getContractAddresses(network.chainId);
-  
+  console.log(network);
   if (!addresses?.WhitelistRegistry) {
     throw new Error("WhitelistRegistry not deployed on this network");
   }
@@ -57,22 +57,21 @@ export async function getWhitelistRegistry(signer) {
 /**
  * Verify a ZK proof on-chain
  * @param {Object} signer - Ethers signer
- * @param {Object} proofData - Proof data with calldata format
- * @param {string} eventId - Numeric event ID
- * @param {string} nullifier - Proof nullifier
- * @param {string} commitment - Proof commitment
+ * @param {Object} proofData - Proof data with calldata format (pA, pB, pC, pubSignals)
+ * @returns {Object} Result with success status and transaction details
  */
-export async function verifyProofOnChain(signer, proofData, eventId, nullifier, commitment) {
+export async function verifyProofOnChain(signer, proofData) {
   try {
     const registry = await getWhitelistRegistry(signer);
     
+    // The contract verifyAndRegister takes only 4 arguments:
+    // _pA, _pB, _pC, _pubSignals (which contains [commitment, nullifier, eventId, expectedNullifier])
+    console.log(proofData);
     const tx = await registry.verifyAndRegister(
       proofData.pA,
       proofData.pB,
       proofData.pC,
-      eventId,
-      nullifier,
-      commitment
+      proofData.pubSignals
     );
     
     const receipt = await tx.wait();

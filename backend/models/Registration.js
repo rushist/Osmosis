@@ -40,6 +40,18 @@ const registrationSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    onChainTxHash: {
+      type: String,
+      default: null,
+    },
+    onChainBlockNumber: {
+      type: Number,
+      default: null,
+    },
+    onChainVerifiedAt: {
+      type: Date,
+      default: null,
+    },
     proofGeneratedAt: {
       type: Date,
       default: null,

@@ -165,6 +165,9 @@ function generateMockProof({ walletAddress, eventId, adminWallet }) {
     "0x" + crypto.createHash("sha256").update(commitmentData).digest("hex").slice(0, 62)
   ).toString();
 
+  // The contract expects pubSignals with 4 elements: [commitment, nullifier, eventId, expectedNullifier]
+  const pubSignals = [commitment, nullifier, numericEventId, nullifier];
+
   return {
     success: true,
     isMock: true,
@@ -174,12 +177,12 @@ function generateMockProof({ walletAddress, eventId, adminWallet }) {
       pi_c: ["0", "0", "1"],
       protocol: "groth16",
     },
-    publicSignals: [commitment, nullifier],
+    publicSignals: pubSignals,
     calldata: {
       pA: ["0", "0"],
       pB: [["0", "0"], ["0", "0"]],
       pC: ["0", "0"],
-      pubSignals: [numericEventId, nullifier],
+      pubSignals: pubSignals,
     },
     commitment,
     nullifier,
