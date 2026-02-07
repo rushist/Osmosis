@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/providers";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://waas-3.onrender.com";
 
 export default function CreateEventPage() {
   const router = useRouter();

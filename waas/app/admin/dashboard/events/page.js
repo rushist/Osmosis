@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://waas-3.onrender.com";
 
 export default function EventsPage() {
     const [events, setEvents] = useState([]);

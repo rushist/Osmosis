@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useWeb3 } from "@/app/providers";
 
-const API_URL = "http://localhost:5000";
+const API_URL = "https://waas-3.onrender.com";
 
 export default function EventDetailPage({ params }) {
     const resolvedParams = use(params);
