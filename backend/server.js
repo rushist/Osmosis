@@ -7,6 +7,14 @@ const { initEmailCron } = require("./cron/emailCron");
 
 const app = express();
 
+const __dirname = path.resolve();
+
+app.use(express.static(path.join(__dirname, "../waas/.next")));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../waas/.next"));
+});
+
 app.use(cors());
 app.use(express.json());
 
