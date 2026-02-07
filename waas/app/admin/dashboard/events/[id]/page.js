@@ -154,6 +154,8 @@ export default function EventDetailPage({ params }) {
                 return "bg-red-500/20 text-red-400 border-red-500/30";
             case "cancelled":
                 return "bg-zinc-500/20 text-zinc-400 border-zinc-500/30";
+            case "revoked":
+                return "bg-orange-500/20 text-orange-400 border-orange-500/30";
             default:
                 return "bg-amber-500/20 text-amber-400 border-amber-500/30";
         }
@@ -184,6 +186,7 @@ export default function EventDetailPage({ params }) {
     const approvedRegistrations = registrations.filter(r => r.status === "approved");
     const rejectedRegistrations = registrations.filter(r => r.status === "rejected");
     const cancelledRegistrations = registrations.filter(r => r.status === "cancelled");
+    const revokedRegistrations = registrations.filter(r => r.status === "revoked");
 
     return (
         <div className="min-h-screen bg-zinc-950 p-8">
@@ -321,8 +324,8 @@ export default function EventDetailPage({ params }) {
                     <p className="text-2xl font-bold text-emerald-400">{approvedRegistrations.length}</p>
                 </div>
                 <div className="bg-zinc-900/60 rounded-xl p-4 border border-zinc-800/50">
-                    <p className="text-zinc-400 text-xs mb-1">Cancelled/Rejected</p>
-                    <p className="text-2xl font-bold text-zinc-400">{cancelledRegistrations.length + rejectedRegistrations.length}</p>
+                    <p className="text-zinc-400 text-xs mb-1">Cancelled/Rejected/Revoked</p>
+                    <p className="text-2xl font-bold text-zinc-400">{cancelledRegistrations.length + rejectedRegistrations.length + revokedRegistrations.length}</p>
                 </div>
             </div>
 
@@ -475,14 +478,14 @@ export default function EventDetailPage({ params }) {
                 </div>
 
                 {/* Cancelled/Rejected List */}
-                {(cancelledRegistrations.length > 0 || rejectedRegistrations.length > 0) && (
+                {(cancelledRegistrations.length > 0 || rejectedRegistrations.length > 0 || revokedRegistrations.length > 0) && (
                     <div className="bg-zinc-900/60 backdrop-blur-xl rounded-2xl border border-zinc-800/50 p-6">
                         <h2 className="text-xl font-semibold text-white mb-4">
-                            Cancelled / Rejected ({cancelledRegistrations.length + rejectedRegistrations.length})
+                            Cancelled / Rejected / Revoked ({cancelledRegistrations.length + rejectedRegistrations.length + revokedRegistrations.length})
                         </h2>
 
                         <div className="space-y-3">
-                            {[...cancelledRegistrations, ...rejectedRegistrations].map((reg) => (
+                            {[...cancelledRegistrations, ...rejectedRegistrations, ...revokedRegistrations].map((reg) => (
                                 <div
                                     key={reg._id}
                                     className="flex items-center justify-between p-4 rounded-xl bg-zinc-800/30 border border-zinc-700/50"
@@ -508,7 +511,7 @@ export default function EventDetailPage({ params }) {
                                         </div>
                                     </div>
                                     <span className={`px-3 py-1 rounded-lg text-xs font-semibold border ${getStatusBadge(reg.status)}`}>
-                                        {reg.status === "cancelled" ? "Cancelled" : "Rejected"}
+                                        {reg.status === "cancelled" ? "Cancelled" : reg.status === "revoked" ? "Revoked" : "Rejected"}
                                     </span>
                                 </div>
                             ))}

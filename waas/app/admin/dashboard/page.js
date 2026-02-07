@@ -255,7 +255,7 @@ export default function Dashboard() {
 
                                         <div>
                                             <h3 className="text-white font-medium group-hover:text-orange-400 transition-colors">
-                                                {event.name}
+                                                {event.title}
                                             </h3>
                                             <p className="text-zinc-500 text-sm">
                                                 {new Date(event.date).toLocaleDateString("en-US", {

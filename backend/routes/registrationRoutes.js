@@ -225,18 +225,41 @@ router.put("/revoke/:id", async (req, res) => {
       return res.status(400).json({ error: "Can only revoke approved registrations" });
     }
 
+    // Get the event to determine approval type
+    const event = await Event.findById(registration.eventId);
+
+    // Build update data - invalidate all approval-related data
+    const updateData = {
+      status: "revoked", // Use 'revoked' status to distinguish from user-cancelled
+      cancellationReason: reason || "Revoked by admin",
+      cancelledAt: new Date(),
+      cancelledBy: "admin",
+      adminMessage: reason || "Your approval has been revoked by the admin",
+    };
+
+    // Invalidate QR code data (for QR approval type)
+    if (event?.approvalType === "qr" || registration.qrToken) {
+      updateData.qrToken = null;
+      updateData.qrCode = null;
+      updateData.emailSent = false;
+    }
+
+    // Invalidate ZK proof data (for wallet approval type)  
+    if (event?.approvalType === "wallet" || registration.zkProof) {
+      updateData.zkProof = null;
+      updateData.proofCommitment = null;
+      updateData.proofNullifier = null;
+      updateData.proofGeneratedAt = null;
+      updateData.onChainVerified = false;
+    }
+
     const updatedRegistration = await Registration.findByIdAndUpdate(
       req.params.id,
-      {
-        status: "cancelled",
-        cancellationReason: reason || "Revoked by admin",
-        cancelledAt: new Date(),
-        cancelledBy: "admin",
-        qrToken: null, // Invalidate QR code
-        qrCode: null,
-      },
+      updateData,
       { new: true }
     );
+
+    console.log(`🚫 Approval revoked for registration ${req.params.id} (${event?.approvalType} type)`);
 
     res.json(updatedRegistration);
   } catch (err) {

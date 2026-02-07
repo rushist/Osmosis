@@ -11,7 +11,8 @@ const events = [
     time: "09:00 AM",
     fee: "0.01 ETH",
     approvalType: "qr",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop",
+    createdBy: "0xd7e975FBa8e361093CE9D63832c585f471B12803"
   },
   {
     title: "Plastic Awareness Workshop",
@@ -20,7 +21,8 @@ const events = [
     time: "02:00 PM",
     fee: "Free",
     approvalType: "wallet",
-    image: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&auto=format&fit=crop",
+    createdBy: "0xd7e975FBa8e361093CE9D63832c585f471B12803"
   },
   {
     title: "Recycling Hackathon",
@@ -29,7 +31,8 @@ const events = [
     time: "10:00 AM",
     fee: "0.02 ETH",
     approvalType: "qr",
-    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop",
+    createdBy: "0xd7e975FBa8e361093CE9D63832c585f471B12803"
   },
   {
     title: "Tree Plantation Drive",
@@ -38,7 +41,8 @@ const events = [
     time: "07:00 AM",
     fee: "Free",
     approvalType: "wallet",
-    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop",
+    createdBy: "0xd7e975FBa8e361093CE9D63832c585f471B12803"
   },
   {
     title: "Green Tech Summit",
@@ -47,7 +51,8 @@ const events = [
     time: "11:00 AM",
     fee: "0.05 ETH",
     approvalType: "qr",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop"
+    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&auto=format&fit=crop",
+    createdBy: "0xd7e975FBa8e361093CE9D63832c585f471B12803"
   },
 ];
 
