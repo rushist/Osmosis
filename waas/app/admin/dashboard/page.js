@@ -17,7 +17,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { isConnected, account, disconnectWallet } = useWeb3();
-    const API_URL = "https://waas-3.onrender.com";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         if (!isConnected) {

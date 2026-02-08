@@ -7,7 +7,7 @@ import { ethers } from "ethers";
 import { useWeb3 } from "../providers";
 import { verifyProofOnChain, getContractAddresses } from "@/lib/contracts";
 
-const API_URL = "https://waas-3.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function EventsPage() {
   const router = useRouter();
