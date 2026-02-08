@@ -1,5 +1,7 @@
-const router = require("express").Router();
-const Event = require("../models/Event");
+import express from "express";
+import Event from "../models/Event.js";
+
+const router = express.Router();
 
 router.post("/", async (req, res) => {
   const event = await Event.create(req.body);
@@ -21,5 +23,4 @@ router.delete("/:id", async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
-
+export default router;

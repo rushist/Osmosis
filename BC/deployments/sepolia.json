@@ -3,8 +3,8 @@
   "chainId": "11155111",
   "deployer": "0xd7e975FBa8e361093CE9D63832c585f471B12803",
   "contracts": {
-    "Groth16Verifier": "0x4d1d41332a3ae4CC93388f99f8D33745D83dFeFf",
-    "WhitelistRegistry": "0xfce59B6D7E06380b1BACF5c4655d020b2d351dA4"
+    "Groth16Verifier": "0x02710d319b87c2c0734C9b30fD7F938B42C437CE",
+    "WhitelistRegistry": "0xe306a213c03C97da0A01E10703698d2a41980745"
   },
-  "deployedAt": "2026-02-07T03:52:16.698Z"
+  "deployedAt": "2026-02-08T08:43:00.241Z"
 }

@@ -1,24 +1,36 @@
-const router = require("express").Router();
-const { upload, cloudinary } = require("../config/cloudinary");
+import express from "express";
+import { upload, cloudinary } from "../config/cloudinary.js";
 
-// Upload single image
-router.post("/", upload.single("image"), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: "No image file provided" });
+const router = express.Router();
+
+// Upload single image with error handling
+router.post("/", (req, res, next) => {
+    upload.single("image")(req, res, (err) => {
+        if (err) {
+            console.error("[UPLOAD] Multer/Cloudinary error:", err);
+            return res.status(500).json({ 
+                error: "Failed to upload image", 
+                details: err.message 
+            });
         }
+        
+        try {
+            if (!req.file) {
+                return res.status(400).json({ error: "No image file provided" });
+            }
 
-        console.log("[UPLOAD] Image uploaded successfully:", req.file.path);
+            console.log("[UPLOAD] Image uploaded successfully:", req.file.path);
 
-        res.json({
-            success: true,
-            url: req.file.path,
-            public_id: req.file.filename,
-        });
-    } catch (err) {
-        console.error("[UPLOAD] Error uploading image:", err);
-        res.status(500).json({ error: "Failed to upload image" });
-    }
+            res.json({
+                success: true,
+                url: req.file.path,
+                public_id: req.file.filename,
+            });
+        } catch (err) {
+            console.error("[UPLOAD] Error uploading image:", err);
+            res.status(500).json({ error: "Failed to upload image" });
+        }
+    });
 });
 
 // Delete image by public_id
@@ -33,4 +45,4 @@ router.delete("/:publicId", async (req, res) => {
     }
 });
 
-module.exports = router;
+export default router;

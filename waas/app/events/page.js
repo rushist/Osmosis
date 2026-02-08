@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ethers } from "ethers";
 import { useWeb3 } from "../providers";
+import { verifyProofOnChain, getContractAddresses } from "@/lib/contracts";
 
-const API_URL = "http://localhost:5000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function EventsPage() {
   const router = useRouter();
@@ -21,6 +23,10 @@ export default function EventsPage() {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [email, setEmail] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
+
+  // Wallet verification state
+  const [isVerifying, setIsVerifying] = useState(null); // registration ID being verified
+  const [verifyError, setVerifyError] = useState(null);
 
   useEffect(() => {
     if (!isConnected) {
@@ -107,6 +113,63 @@ export default function EventsPage() {
     e.preventDefault();
     if (selectedEvent && email) {
       registerEvent(selectedEvent, email);
+    }
+  };
+
+  // Handle wallet verification on-chain
+  const handleVerifyWallet = async (registration, event) => {
+    if (!registration.zkProof?.calldata) {
+      setStatusMessage("No proof data available for verification");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 4000);
+      return;
+    }
+
+    setIsVerifying(registration._id);
+    setVerifyError(null);
+
+    try {
+      // Get signer from MetaMask
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const network = await provider.getNetwork();
+      
+      // Check if network is supported
+      const addresses = getContractAddresses(network.chainId);
+      if (!addresses) {
+        throw new Error(`Unsupported network. Please switch to Sepolia or localhost.`);
+      }
+
+      // Submit proof to blockchain
+      const result = await verifyProofOnChain(signer, registration.zkProof.calldata);
+
+      if (result.success) {
+        // Update backend with verification status
+        await fetch(`${API_URL}/register/verify-onchain/${registration._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            txHash: result.txHash,
+            blockNumber: result.blockNumber,
+            walletAddress: account,
+          }),
+        });
+
+        setStatusMessage(`Wallet verified on-chain! TX: ${result.txHash.slice(0, 10)}...`);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 4000);
+        fetchUserRegistrations(); // Refresh to show updated status
+      } else {
+        throw new Error(result.error || "Verification failed");
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      setVerifyError(error.message || "Unknown error");
+      setStatusMessage(`Verification failed: ${error.message || "Unknown error"}`);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 6000);
+    } finally {
+      setIsVerifying(null);
     }
   };
 
@@ -418,7 +481,58 @@ export default function EventsPage() {
                       </button>
                     )}
 
-                    {isApproved && (
+                    {isApproved && event.approvalType === "wallet" && registration?.zkProof && !registration?.onChainVerified && (
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
+                          <p className="text-zinc-400 text-xs mb-1">Your Wallet Address</p>
+                          <p className="text-white font-mono text-sm break-all">{account}</p>
+                        </div>
+                        <button
+                          onClick={() => handleVerifyWallet(registration, event)}
+                          disabled={isVerifying === registration._id}
+                          className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-400 hover:to-cyan-400 text-white font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-blue-500/30 transform hover:scale-[1.02]"
+                        >
+                          {isVerifying === registration._id ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Verifying on Blockchain...
+                            </span>
+                          ) : (
+                            <span className="flex items-center justify-center gap-2">
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                              </svg>
+                              Verify Wallet On-Chain
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {isApproved && registration?.onChainVerified && (
+                      <div className="space-y-3">
+                        <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
+                          <p className="text-zinc-400 text-xs mb-1">Verified Wallet</p>
+                          <p className="text-emerald-400 font-mono text-sm break-all">{account}</p>
+                        </div>
+                        <button
+                          disabled
+                          className="w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30 cursor-default"
+                        >
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            ✓ Verified On-Chain
+                          </span>
+                        </button>
+                      </div>
+                    )}
+
+                    {isApproved && (event.approvalType === "qr" || (!registration?.zkProof && event.approvalType === "wallet")) && !registration?.onChainVerified && (
                       <button
                         disabled
                         className="w-full py-3 rounded-xl bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30 cursor-default"

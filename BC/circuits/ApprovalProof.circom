@@ -17,9 +17,8 @@ template ApprovalProof() {
     
     // Public inputs
     signal input eventId;
-    signal input expectedNullifier;
     
-    // Output
+    // Outputs (all are public signals)
     signal output commitment;
     signal output nullifier;
     
@@ -44,9 +43,6 @@ template ApprovalProof() {
     }
     nullifier <== nullifierPedersen.out[0];
     
-    // Verify nullifier matches expected
-    expectedNullifier === nullifier;
-    
     // Compute commitment = Pedersen(walletHash, eventId, adminSecret, timestamp)
     component commitPedersen = Pedersen(992);
     for (var i = 0; i < 248; i++) {
@@ -64,3 +60,4 @@ template ApprovalProof() {
 }
 
 component main = ApprovalProof();
+

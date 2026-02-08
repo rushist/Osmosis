@@ -1,6 +1,6 @@
-const nodemailer = require("nodemailer");
-const QRCode = require("qrcode");
-const crypto = require("crypto");
+import nodemailer from "nodemailer";
+import QRCode from "qrcode";
+import crypto from "crypto";
 
 // Create Gmail transporter
 const createTransporter = () => {
@@ -170,7 +170,7 @@ const getEmailTemplate = (registration, event) => {
   `;
 };
 
-module.exports = {
+export {
     generateQRToken,
     generateQRCode,
     sendQREmail,

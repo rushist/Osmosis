@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/providers";
 import dynamic from "next/dynamic";
 
+
 // Dynamically import FloatingLines
 const FloatingLines = dynamic(() => import("@/app/components/FloatingLines"), {
     ssr: false,
@@ -17,7 +18,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const { isConnected, account, disconnectWallet } = useWeb3();
-    const API_URL = "http://localhost:5000";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
     useEffect(() => {
         if (!isConnected) {
@@ -30,7 +31,13 @@ export default function Dashboard() {
                 const res = await fetch(`${API_URL}/events`);
                 if (!res.ok) throw new Error("Failed to fetch events");
                 const data = await res.json();
-                setEvents(data);
+                
+                // Filter events created by the connected wallet
+                const userEvents = data.filter(
+                    (event) => event.createdBy && event.createdBy.toLowerCase() === account.toLowerCase()
+                );
+                
+                setEvents(userEvents);
             } catch (err) {
                 console.error("Error fetching events:", err);
             } finally {

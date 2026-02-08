@@ -1,8 +1,10 @@
-const router = require("express").Router();
-const Registration = require("../models/Registration");
-const Event = require("../models/Event");
-const { generateQRToken, generateQRCode, sendQREmail } = require("../services/emailService");
-const { generateApprovalProof } = require("../services/zkProofService");
+import express from "express";
+import Registration from "../models/Registration.js";
+import Event from "../models/Event.js";
+import { generateQRToken, generateQRCode, sendQREmail } from "../services/emailService.js";
+import { generateApprovalProof } from "../services/zkProofService.js";
+
+const router = express.Router();
 
 // Create registration
 router.post("/", async (req, res) => {
@@ -46,7 +48,14 @@ router.put("/approve/:id", async (req, res) => {
       });
 
       if (proofResult.success) {
-        updateData.zkProof = proofResult.proof;
+        // Save full proof data including calldata for on-chain verification
+        updateData.zkProof = {
+          proof: proofResult.proof,
+          publicSignals: proofResult.publicSignals,
+          calldata: proofResult.calldata,
+          numericEventId: proofResult.numericEventId,
+          isMock: proofResult.isMock || false,
+        };
         updateData.proofCommitment = proofResult.commitment;
         updateData.proofNullifier = proofResult.nullifier;
         updateData.proofGeneratedAt = new Date();
@@ -54,6 +63,7 @@ router.put("/approve/:id", async (req, res) => {
         console.log("✅ ZK proof generated:", {
           commitment: proofResult.commitment,
           nullifier: proofResult.nullifier,
+          hasCalldata: !!proofResult.calldata,
           isMock: proofResult.isMock || false,
         });
       }
@@ -307,4 +317,48 @@ router.get("/event/:eventId/cancelled", async (req, res) => {
   }
 });
 
-module.exports = router;
+// Mark registration as verified on-chain
+router.put("/verify-onchain/:id", async (req, res) => {
+  try {
+    const { txHash, blockNumber, walletAddress } = req.body;
+
+    const registration = await Registration.findById(req.params.id);
+    if (!registration) {
+      return res.status(404).json({ error: "Registration not found" });
+    }
+
+    // Verify the wallet address matches
+    if (registration.walletAddress.toLowerCase() !== walletAddress.toLowerCase()) {
+      return res.status(403).json({ error: "Wallet address mismatch" });
+    }
+
+    // Verify registration is approved and has a proof
+    if (registration.status !== "approved") {
+      return res.status(400).json({ error: "Registration is not approved" });
+    }
+
+    if (!registration.zkProof) {
+      return res.status(400).json({ error: "No ZK proof found for this registration" });
+    }
+
+    const updatedRegistration = await Registration.findByIdAndUpdate(
+      req.params.id,
+      {
+        onChainVerified: true,
+        onChainTxHash: txHash,
+        onChainBlockNumber: blockNumber,
+        onChainVerifiedAt: new Date(),
+      },
+      { new: true }
+    );
+
+    console.log(`✅ Registration ${req.params.id} verified on-chain: ${txHash}`);
+
+    res.json(updatedRegistration);
+  } catch (err) {
+    console.error("On-chain verification update error:", err);
+    res.status(500).json({ error: "Failed to update verification status" });
+  }
+});
+
+export default router;
