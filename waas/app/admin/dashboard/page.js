@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useWeb3 } from "@/app/providers";
 import dynamic from "next/dynamic";
 
+
 // Dynamically import FloatingLines
 const FloatingLines = dynamic(() => import("@/app/components/FloatingLines"), {
     ssr: false,
