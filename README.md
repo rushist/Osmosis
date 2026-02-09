@@ -1,6 +1,3 @@
-Here’s a **clean, hackathon-grade README** for *Osmosis* — tight, technical, and aligned with your architecture:
-
----
 
 # Osmosis
 
